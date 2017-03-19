@@ -1,5 +1,5 @@
  VariationalRecurrentNeuralNetwork
-Pytorch implementation of the Variational RNN (VRNN), from *A Recurrent Latent Variable Model for Sequent$
+Pytorch implementation of the Variational RNN (VRNN), from *A Recurrent Latent Variable Model for Sequential Data*
 The paper is available [here](https://arxiv.org/abs/1506.02216).
 
 ## Run:
