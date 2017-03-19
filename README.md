@@ -11,4 +11,4 @@ To sample with saved model: ``` python sample [saves/saved_state_dict_name.pth]`
 
 ## Some samples:
 
-[!png](images/samples.png)
+![png](images/samples.png)
