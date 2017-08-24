@@ -81,8 +81,6 @@ class VRNN(nn.Module):
 		h = Variable(torch.zeros(self.n_layers, x.size(1), self.h_dim))
 		for t in range(x.size(0)):
 			
-			h = self._repackage_state(h)
-			
 			phi_x_t = self.phi_x(x[t])
 
 			#encoder
@@ -157,13 +155,6 @@ class VRNN(nn.Module):
 		for weight in self.parameters():
 			weight.data.normal_(0, stdv)
 
-
-	def _repackage_state(self, h):
-		if type(h) == Variable:
-			return Variable(h.data)
-		else:
-			return tuple(self._repackage_state(v) for v in h)
-	
 
 	def _init_weights(self, stdv):
 		pass
