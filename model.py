@@ -173,7 +173,7 @@ class VRNN(nn.Module):
 
 		kld_element =  (2 * torch.log(std_2) - 2 * torch.log(std_1) + 
 			(std_1.pow(2) + (mean_1 - mean_2).pow(2)) /
-			(std_2).pow(2) - 1)  #added 1e-5 to the denominator here for avoding NAN loss
+			(std_2).pow(2) - 1)  
 		return	0.5 * torch.sum(kld_element)
 
 
