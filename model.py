@@ -86,7 +86,7 @@ class VRNN(nn.Module):
 			#encoder
 			enc_t = self.enc(torch.cat([phi_x_t, h[-1]], 1))
 			enc_mean_t = self.enc_mean(enc_t)
-			enc_std_t = self.enc_std(enc_t)
+			enc_std_t = self.enc_std(enc_t) 
 
 			#prior
 			prior_t = self.prior(h[-1])
@@ -100,7 +100,7 @@ class VRNN(nn.Module):
 			#decoder
 			dec_t = self.dec(torch.cat([phi_z_t, h[-1]], 1))
 			dec_mean_t = self.dec_mean(dec_t)
-			dec_std_t = self.dec_std(dec_t)
+			dec_std_t = self.dec_std(dec_t) 
 
 			#recurrence
 			_, h = self.rnn(torch.cat([phi_x_t, phi_z_t], 1).unsqueeze(0), h)
@@ -125,6 +125,7 @@ class VRNN(nn.Module):
 		sample = torch.zeros(seq_len, self.x_dim)
 
 		h = Variable(torch.zeros(self.n_layers, 1, self.h_dim))
+
 		for t in range(seq_len):
 
 			#prior
@@ -172,7 +173,7 @@ class VRNN(nn.Module):
 
 		kld_element =  (2 * torch.log(std_2) - 2 * torch.log(std_1) + 
 			(std_1.pow(2) + (mean_1 - mean_2).pow(2)) /
-			std_2.pow(2) - 1)
+			(std_2 + 1e-5).pow(2) - 1)  #added 1e-5 to the denominator here for avoding NAN loss
 		return	0.5 * torch.sum(kld_element)
 
 
