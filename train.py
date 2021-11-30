@@ -13,10 +13,6 @@ Neural Network (VRNN) from https://arxiv.org/abs/1506.02216
 using unimodal isotropic gaussian distributions for 
 inference, prior, and generating models."""
 
-
-# changing device
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
 def train(epoch):
     train_loss = 0
     for batch_idx, (data, _) in enumerate(train_loader):
@@ -34,7 +30,7 @@ def train(epoch):
         optimizer.step()
 
         #grad norm clipping, only in pytorch version >= 1.10
-        nn.utils.clip_grad_norm(model.parameters(), clip)
+        nn.utils.clip_grad_norm_(model.parameters(), clip)
 
         #printing
         if batch_idx % print_every == 0:
@@ -50,32 +46,39 @@ def train(epoch):
 
         train_loss += loss.item()
 
-
     print('====> Epoch: {} Average loss: {:.4f}'.format(
         epoch, train_loss / len(train_loader.dataset)))
-
+    
 
 def test(epoch):
     """uses test data to evaluate 
     likelihood of the model"""
 
     mean_kld_loss, mean_nll_loss = 0, 0
-    for i, (data, _) in enumerate(test_loader):                                            
+    with torch.no_grad():
+        for i, (data, _) in enumerate(test_loader):                                            
 
-        data = data.to(device)
-        data = data.squeeze().transpose(0, 1)
-        data = (data - data.min()) / (data.max() - data.min())
+            data = data.to(device)
+            data = data.squeeze().transpose(0, 1)
+            data = (data - data.min()) / (data.max() - data.min())
 
-        kld_loss, nll_loss, _, _ = model(data)
-        mean_kld_loss += kld_loss
-        mean_nll_loss += nll_loss
+            kld_loss, nll_loss, _, _ = model(data)
+            mean_kld_loss += kld_loss.item()
+            mean_nll_loss += nll_loss.item()
 
     mean_kld_loss /= len(test_loader.dataset)
     mean_nll_loss /= len(test_loader.dataset)
-
+   
     print('====> Test set loss: KLD Loss = {:.4f}, NLL Loss = {:.4f} '.format(
         mean_kld_loss, mean_nll_loss))
 
+
+# changing device
+if torch.cuda.is_available():
+    device = torch.device('cuda')
+    torch.cuda.empty_cache()
+else:
+    device = torch.device('cpu')
 
 #hyperparameters
 x_dim = 28
@@ -87,14 +90,15 @@ clip = 10
 learning_rate = 1e-3
 batch_size = 8 #128
 seed = 128
-print_every = 100
-save_every = 10
+print_every = 1000 # batches
+save_every = 10 # epochs
 
 #manual seed
 torch.manual_seed(seed)
 plt.ion()
 
 #init model + optimizer + datasets
+
 train_loader = torch.utils.data.DataLoader(
     datasets.MNIST('data', train=True, download=True,
         transform=transforms.ToTensor()),
