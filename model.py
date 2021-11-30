@@ -15,6 +15,7 @@ inference, prior, and generating models."""
 
 # changing device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+EPS = torch.finfo(torch.float).eps # numerical logs
 
 class VRNN(nn.Module):
     def __init__(self, x_dim, h_dim, z_dim, n_layers, bias=False):
@@ -88,7 +89,7 @@ class VRNN(nn.Module):
             #encoder
             enc_t = self.enc(torch.cat([phi_x_t, h[-1]], 1))
             enc_mean_t = self.enc_mean(enc_t)
-            enc_std_t = self.enc_std(enc_t)
+            enc_std_t = self.enc_std(enc_t) 
 
             #prior
             prior_t = self.prior(h[-1])
@@ -171,15 +172,15 @@ class VRNN(nn.Module):
     def _kld_gauss(self, mean_1, std_1, mean_2, std_2):
         """Using std to compute KLD"""
 
-        kld_element =  (2 * torch.log(std_2) - 2 * torch.log(std_1) + 
+        kld_element =  (2 * torch.log(std_2 + EPS) - 2 * torch.log(std_1 + EPS) + 
             (std_1.pow(2) + (mean_1 - mean_2).pow(2)) /
             std_2.pow(2) - 1)
         return	0.5 * torch.sum(kld_element)
 
 
     def _nll_bernoulli(self, theta, x):
-        return - torch.sum(x*torch.log(theta) + (1-x)*torch.log(1-theta))
+        return - torch.sum(x*torch.log(theta + EPS) + (1-x)*torch.log(1-theta-EPS))
 
 
     def _nll_gauss(self, mean, std, x):
-        pass
+        return torch.sum(torch.log(std + EPS) + torch.log(2*torch.pi)/2 + (x - mean).pow(2)/(2*std.pow(2)))

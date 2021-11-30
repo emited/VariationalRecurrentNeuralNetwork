@@ -22,11 +22,8 @@ def train(epoch):
     for batch_idx, (data, _) in enumerate(train_loader):
 
         #transforming data
-        #data = Variable(data)
-        #to remove eventually
-        
         data = data.to(device)
-        data = data.squeeze().transpose(0, 1)
+        data = data.squeeze().transpose(0, 1) # (seq, batch, elem)
         data = (data - data.min()) / (data.max() - data.min())
         
         #forward + backward + optimize
@@ -42,7 +39,7 @@ def train(epoch):
         #printing
         if batch_idx % print_every == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\t KLD Loss: {:.6f} \t NLL Loss: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(train_loader.dataset),
+                epoch, batch_idx * batch_size, batch_size * (len(train_loader.dataset)//batch_size),
                 100. * batch_idx / len(train_loader),
                 kld_loss / batch_size,
                 nll_loss / batch_size))
@@ -88,7 +85,7 @@ n_layers =  1
 n_epochs = 100
 clip = 10
 learning_rate = 1e-3
-batch_size = 16 #128
+batch_size = 8 #128
 seed = 128
 print_every = 100
 save_every = 10
