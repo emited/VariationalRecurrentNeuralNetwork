@@ -85,8 +85,16 @@ def load_data(experiment, train, batchsize, resample_val, shuffle, seed_val, seq
     dataset = dataset.make_trial_data()
 
     trial_ids = np.unique(dataset['trial_id'])
-    if shuffle: np.random.shuffle(trial_ids)
-    trial_ids = trial_ids[0:batchsize]
+    eligible_ids = []
+
+    for ID in trial_ids:
+        if len(dataset[dataset['trial_id'] == ID]) >= seq_len:
+            eligible_ids.append(ID)
+
+    eligible_ids = np.array(eligible_ids)
+
+    if shuffle: np.random.shuffle(eligible_ids)
+    trial_ids = eligible_ids[0:batchsize]
 
     neuron_ids = np.array(dataset['spikes'].keys().tolist())
     np.random.shuffle(neuron_ids)
@@ -114,7 +122,7 @@ def load_data(experiment, train, batchsize, resample_val, shuffle, seed_val, seq
 
 
 if __name__ == "__main__":
-    data, neuron_ids, trial_ids = load_data(experiment=3, train=True, batchsize=3, resample_val=1, shuffle=False, seed_val=111, seq_len=10, neur_count=5)
+    data, neuron_ids, trial_ids = load_data(experiment=3, train=True, batchsize=100, resample_val=1, shuffle=False, seed_val=111, seq_len=300, neur_count=50)
 
     print(data.shape)
     print(neuron_ids.shape)
